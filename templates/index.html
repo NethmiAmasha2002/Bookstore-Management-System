@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookstore Management System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 1.1em; }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .control-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .input-group { flex: 1; min-width: 150px; }
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: 600; }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-info { background: #3b82f6; color: white; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-value { font-size: 2.5em; font-weight: bold; color: #667eea; margin: 10px 0; }
+        .stat-label { color: #666; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .data-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .data-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .data-table {
+    width: 100%;
+    overflow-x: auto;
+    max-height: 400px; /* adjust as needed */
+    overflow-y: auto;
+    display: block;
+}
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: #f8f9fa; font-weight: 600; color: #333; }
+        tr:hover { background: #f8f9fa; }
+        .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600; }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+        .status-warning { background: #fef3c7; color: #92400e; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+        /* Chart container placeholder */
+        #chartContainer {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Bookstore Management System</h1>
+            <p class="subtitle">Ontology-Based Multi-Agent Simulation</p>
+        </header>
+        
+        <div class="controls">
+            <div class="control-row">
+                <div class="input-group">
+                    <label>Customers</label>
+                    <input type="number" id="customers" value="10" min="1" max="50">
+                </div>
+                <div class="input-group">
+                    <label>Employees</label>
+                    <input type="number" id="employees" value="3" min="1" max="10">
+                </div>
+                <div class="input-group">
+                    <label>Books</label>
+                    <input type="number" id="books" value="15" min="5" max="20">
+                </div>
+                <button class="btn-primary" onclick="initializeSimulation()">Initialize</button>
+                <button class="btn-success" onclick="startSimulation()" id="startBtn" disabled>Start</button>
+                <button class="btn-danger" onclick="stopSimulation()" id="stopBtn" disabled>Stop</button>
+                <button class="btn-info" onclick="stepSimulation()" id="stepBtn" disabled>Step</button>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Current Step</div>
+                <div class="stat-value" id="step">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Sales</div>
+                <div class="stat-value" id="sales">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value" id="revenue">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Customers</div>
+                <div class="stat-value" id="activeCustomers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Books In Stock</div>
+                <div class="stat-value" id="inStock">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Distinct Books In Stock</div>
+                <div class="stat-value" id="restocks">0</div>
+            </div>
+        </div>
+        
+        <div class="data-grid">
+            <div class="data-card">
+                <h3>📚 Top Books</h3>
+                <div class="data-table">
+                    <table id="booksTable">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="5" class="loading">Initialize simulation first</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="data-card">
+                <h3>👥 Customers</h3>
+                <div class="data-table">
+                    <table id="customersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Budget</th>
+                                <th>Purchases</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4" class="loading">Initialize simulation first</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+    <div class="data-card">
+    <h3>📊 Simulation Graph</h3>
+    <canvas id="simulationChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('simulationChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'Total Sales', data: [], borderColor: '#667eea', fill: false },
+                { label: 'Active Customers', data: [], borderColor: '#10b981', fill: false },
+                { label: 'Books In Stock', data: [], borderColor: '#ef4444', fill: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    async function updateGraph() {
+        const hist = await fetch('/api/history').then(r => r.json());
+        chart.data.labels = hist.steps;
+        chart.data.datasets[0].data = hist.sales;
+        chart.data.datasets[1].data = hist.active_customers;
+        chart.data.datasets[2].data = hist.books_in_stock;
+        chart.update();
+    }
+
+    // Call updateGraph every 1 second along with updateStats
+    setInterval(updateGraph, 1000);
+</script>
+
+
+
+    
+    <script>
+        let updateInterval = null;
+        
+        async function initializeSimulation() {
+            try {
+                const customers = document.getElementById('customers').value;
+                const employees = document.getElementById('employees').value;
+                const books = document.getElementById('books').value;
+                
+                const response = await fetch('/api/initialize', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        customers: parseInt(customers), 
+                        employees: parseInt(employees), 
+                        books: parseInt(books)
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stepBtn').disabled = false;
+                    alert('Simulation initialized successfully!');
+                    await updateStats();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to initialize: ' + error.message);
+            }
+        }
+        
+        async function startSimulation() {
+            try {
+                const response = await fetch('/api/start', {method: 'POST'});
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('stepBtn').disabled = true;
+                    updateInterval = setInterval(updateStats, 1000);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to start: ' + error.message);
+            }
+        }
+        
+        async function stopSimulation() {
+            try {
+                const response = await fetch('/api/stop', {method: 'POST'});
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('stepBtn').disabled = false;
+                    clearInterval(updateInterval);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to stop: ' + error.message);
+            }
+        }
+        
+        async function stepSimulation() {
+            try {
+                const response = await fetch('/api/step', {method: 'POST'});
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    await updateStats();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to execute step: ' + error.message);
+            }
+        }
+        
+        async function updateStats() {
+            try {
+                const stats = await fetch('/api/stats').then(r => r.json());
+                const books = await fetch('/api/books').then(r => r.json());
+                const customers = await fetch('/api/customers').then(r => r.json());
+                const employees = await fetch('/api/employees').then(r => r.json());
+                
+                document.getElementById('step').textContent = stats.step;
+                document.getElementById('sales').textContent = stats.total_sales;
+                document.getElementById('revenue').textContent = '$' + stats.total_revenue;
+                document.getElementById('activeCustomers').textContent = stats.active_customers + '/' + stats.total_customers;
+                document.getElementById('inStock').textContent = stats.books_in_stock + '/' + stats.total_books;
+                document.getElementById('restocks').textContent = stats.total_restocks;
+                
+                updateBooksTable(books);
+                updateCustomersTable(customers);
+                updateEmployeesTable(employees);
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+        
+        function updateBooksTable(books) {
+    const tbody = document.getElementById('booksTable').querySelector('tbody');
+
+    if (!books || books.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading">No data available</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = books.map(book => `
+        <tr>
+            <td>${book.title}</td>
+            <td>$${book.price}</td>
+            <td>
+                <span class="status-badge ${book.quantity === 0 ? 'status-inactive' : book.quantity < 5 ? 'status-warning' : 'status-active'}">
+                    ${book.quantity}
+                </span>
+            </td>
+            <td>${book.purchases}</td>
+        </tr>
+    `).join('');
+}
+
+        
+  function updateCustomersTable(customers) {
+    const tbody = document.getElementById('customersTable').querySelector('tbody');
+
+    if (!customers || customers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading">No data available</td></tr>';
+        return;
+    }
+
+    // Show all customers
+    tbody.innerHTML = customers.map(customer => `
+        <tr>
+            <td>${customer.name}</td>
+            <td>$${customer.budget.toFixed(2)}</td>
+            <td>${customer.purchases}</td>
+            <td>
+                <span class="status-badge ${customer.active ? 'status-active' : 'status-inactive'}">
+                    ${customer.active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+        
+        function updateEmployeesTable(employees) {
+            const tbody = document.getElementById('employeesTable').querySelector('tbody');
+            if (!employees || employees.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="loading">No data available</td></tr>';
+                return;
+            }
+            tbody.innerHTML = employees.map(employee => `
+                <tr>
+                    <td>${employee.name}</td>
+                    <td>${employee.restocks}</td>
+                </tr>
+            `).join('');
+        }
+        
+        window.addEventListener('load', () => {
+            updateStats();
+        });
+    </script>
+</body>
+</html>

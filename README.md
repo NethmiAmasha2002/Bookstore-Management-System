@@ -1,4 +1,4 @@
-##📚 Bookstore Management System (Multi-Agent)
+## Bookstore Management System (Multi-Agent)
 
 An intelligent web-based bookstore management system that leverages multi-agent architecture and ontology-based knowledge modeling to simulate and automate bookstore operations efficiently.
 
